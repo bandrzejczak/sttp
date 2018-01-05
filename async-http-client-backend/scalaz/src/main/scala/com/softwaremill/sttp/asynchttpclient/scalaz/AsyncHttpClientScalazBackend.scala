@@ -2,20 +2,13 @@ package com.softwaremill.sttp.asynchttpclient.scalaz
 
 import java.nio.ByteBuffer
 
-import com.softwaremill.sttp.{
-  FollowRedirectsBackend,
-  MonadAsyncError,
-  SttpBackend,
-  SttpBackendOptions
-}
+import com.softwaremill.sttp.{FollowRedirectsBackend, MonadAsyncError, SttpBackend, SttpBackendOptions}
 import com.softwaremill.sttp.asynchttpclient.AsyncHttpClientBackend
-import org.asynchttpclient.{
-  AsyncHttpClient,
-  AsyncHttpClientConfig,
-  DefaultAsyncHttpClient
-}
+import org.asynchttpclient.{AsyncHttpClient, AsyncHttpClientConfig, DefaultAsyncHttpClient}
 import org.reactivestreams.Publisher
+import rx.lang.scala.Observable
 
+import scala.concurrent.Promise
 import scalaz.{-\/, \/-}
 import scalaz.concurrent.Task
 
@@ -77,4 +70,8 @@ private[scalaz] object TaskMonad extends MonadAsyncError[Task] {
 
   override protected def handleWrappedError[T](rt: Task[T])(
       h: PartialFunction[Throwable, Task[T]]): Task[T] = rt.handleWith(h)
+
+  //todo figure out this later
+  override def toObservable[T](fa: Task[T]): Observable[T] = ??? //todo figure out this later
+  override def fromObservable[T](observable: Observable[T]): Task[T] = ??? //todo figure out this later
 }

@@ -67,6 +67,7 @@ lazy val core: Project = (project in file("core"))
   .settings(
     name := "core",
     libraryDependencies ++= Seq(
+      "io.reactivex" %% "rxscala" % "0.26.4",
       "org.scalacheck" %% "scalacheck" % "1.13.5" % "test",
       scalaTest % "test"
     )
@@ -173,6 +174,16 @@ lazy val json4s: Project = (project in file("json/json4s"))
     )
   ) dependsOn core
 
+lazy val hystrix: Project = (project in file("hystrix"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "hystrix",
+    libraryDependencies ++= Seq(
+      "com.netflix.hystrix" % "hystrix-core" % "1.5.12",
+      scalaTest % "test"
+    )
+  ) dependsOn core
+
 lazy val tests: Project = (project in file("tests"))
   .settings(commonSettings: _*)
   .settings(
@@ -187,4 +198,4 @@ lazy val tests: Project = (project in file("tests"))
     ).map(_ % "test"),
     libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value % "test"
   ) dependsOn (core, akkaHttpBackend, asyncHttpClientFutureBackend, asyncHttpClientScalazBackend,
-asyncHttpClientMonixBackend, asyncHttpClientCatsBackend, asyncHttpClientFs2Backend, okhttpMonixBackend)
+asyncHttpClientMonixBackend, asyncHttpClientCatsBackend, asyncHttpClientFs2Backend, okhttpMonixBackend, hystrix)

@@ -4,24 +4,14 @@ import java.nio.ByteBuffer
 
 import cats.effect._
 import com.softwaremill.sttp.asynchttpclient.AsyncHttpClientBackend
-import com.softwaremill.sttp.{
-  FollowRedirectsBackend,
-  MonadAsyncError,
-  SttpBackend,
-  SttpBackendOptions,
-  Utf8,
-  concatByteBuffers
-}
+import com.softwaremill.sttp.{FollowRedirectsBackend, MonadAsyncError, SttpBackend, SttpBackendOptions, Utf8, concatByteBuffers}
 import fs2._
 import fs2.interop.reactivestreams._
-import org.asynchttpclient.{
-  AsyncHttpClient,
-  AsyncHttpClientConfig,
-  DefaultAsyncHttpClient
-}
+import org.asynchttpclient.{AsyncHttpClient, AsyncHttpClientConfig, DefaultAsyncHttpClient}
 import org.reactivestreams.Publisher
+import rx.lang.scala.Observable
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Promise}
 import scala.language.higherKinds
 
 class AsyncHttpClientFs2Backend[F[_]: Effect] private (
@@ -112,4 +102,8 @@ private[fs2] class EffectMonad[F[_]](implicit F: Effect[F])
   override protected def handleWrappedError[T](rt: F[T])(
       h: PartialFunction[Throwable, F[T]]): F[T] =
     F.recoverWith(rt)(h)
+
+  //todo figure out this later
+  override def toObservable[T](fa: F[T]): Observable[T] = ??? //todo figure out this later
+  override def fromObservable[T](observable: Observable[T]): F[T] = ??? //todo figure out this later
 }

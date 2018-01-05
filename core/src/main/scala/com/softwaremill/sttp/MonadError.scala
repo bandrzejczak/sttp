@@ -1,5 +1,7 @@
 package com.softwaremill.sttp
 
+import rx.lang.scala.Observable
+
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
@@ -26,6 +28,10 @@ trait MonadError[R[_]] {
     case Success(v) => unit(v)
     case Failure(e) => error(e)
   }
+
+  def toObservable[T](fa: R[T]): Observable[T]
+
+  def fromObservable[T](observable: Observable[T]): R[T]
 }
 
 trait MonadAsyncError[R[_]] extends MonadError[R] {
@@ -40,6 +46,10 @@ object IdMonad extends MonadError[Id] {
   override def error[T](t: Throwable): Id[T] = throw t
   override protected def handleWrappedError[T](rt: Id[T])(
       h: PartialFunction[Throwable, Id[T]]): Id[T] = rt
+
+  override def toObservable[T](fa: Id[T]): Observable[T] = Observable.just(fa)
+
+  override def fromObservable[T](observable: Observable[T]): Id[T] = observable.toBlocking.single
 }
 object TryMonad extends MonadError[Try] {
   override def unit[T](t: T): Try[T] = Success(t)
@@ -50,6 +60,10 @@ object TryMonad extends MonadError[Try] {
   override def error[T](t: Throwable): Try[T] = Failure(t)
   override protected def handleWrappedError[T](rt: Try[T])(
       h: PartialFunction[Throwable, Try[T]]): Try[T] = rt.recoverWith(h)
+
+  override def toObservable[T](fa: Try[T]): Observable[T] = Observable.from(fa)
+
+  override def fromObservable[T](observable: Observable[T]): Try[T] = Try(observable.toBlocking.single)
 }
 class FutureMonad(implicit ec: ExecutionContext)
     extends MonadAsyncError[Future] {
@@ -71,5 +85,18 @@ class FutureMonad(implicit ec: ExecutionContext)
       case Right(t) => p.success(t)
     }
     p.future
+  }
+
+  override def toObservable[T](fa: Future[T]): Observable[T] = Observable.from(fa)
+
+  override def fromObservable[T](observable: Observable[T]): Future[T] = {
+    val promise = Promise[T]()
+
+    observable.subscribe(
+      x => promise.success(x),
+      e => promise.failure(e),
+      () => ()
+    )
+    promise.future
   }
 }

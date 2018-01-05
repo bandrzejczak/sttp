@@ -4,19 +4,12 @@ import java.nio.ByteBuffer
 
 import cats.effect._
 import com.softwaremill.sttp.asynchttpclient.AsyncHttpClientBackend
-import com.softwaremill.sttp.{
-  FollowRedirectsBackend,
-  MonadAsyncError,
-  SttpBackend,
-  SttpBackendOptions
-}
-import org.asynchttpclient.{
-  AsyncHttpClient,
-  AsyncHttpClientConfig,
-  DefaultAsyncHttpClient
-}
+import com.softwaremill.sttp.{FollowRedirectsBackend, MonadAsyncError, SttpBackend, SttpBackendOptions}
+import org.asynchttpclient.{AsyncHttpClient, AsyncHttpClientConfig, DefaultAsyncHttpClient}
 import org.reactivestreams.Publisher
+import rx.lang.scala.Observable
 
+import scala.concurrent.Promise
 import scala.language.higherKinds
 
 class AsyncHttpClientCatsBackend[F[_]: Async] private (
@@ -82,4 +75,8 @@ private[cats] class AsyncMonad[F[_]](implicit F: Async[F])
   override protected def handleWrappedError[T](rt: F[T])(
       h: PartialFunction[Throwable, F[T]]): F[T] =
     F.recoverWith(rt)(h)
+
+  //todo figure out this later
+  override def toObservable[T](fa: F[T]): Observable[T] = ??? //todo figure out this later
+  override def fromObservable[T](observable: Observable[T]): F[T] = ??? //todo figure out this later
 }

@@ -13,8 +13,9 @@ import monix.reactive.observers.Subscriber
 import okhttp3.{MediaType, OkHttpClient, RequestBody => OkHttpRequestBody}
 import okio.BufferedSink
 
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success, Try}
+import rx.lang.scala
 
 class OkHttpMonixBackend private (client: OkHttpClient, closeClient: Boolean)(
     implicit s: Scheduler)
@@ -122,4 +123,8 @@ private[monix] object TaskMonad extends MonadAsyncError[Task] {
       h: PartialFunction[Throwable, Task[T]]): Task[T] = rt.onErrorRecoverWith {
     case t => h(t)
   }
+
+  //todo figure out this later
+  override def toObservable[T](fa: Task[T]): scala.Observable[T] = scala.Observable.empty //todo figure out this later
+  override def fromObservable[T](observable: scala.Observable[T]): Task[T] = ??? //todo figure out this later
 }

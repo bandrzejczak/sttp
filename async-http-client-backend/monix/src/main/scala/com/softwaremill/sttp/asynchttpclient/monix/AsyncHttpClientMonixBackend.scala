@@ -2,26 +2,17 @@ package com.softwaremill.sttp.asynchttpclient.monix
 
 import java.nio.ByteBuffer
 
-import com.softwaremill.sttp.{
-  FollowRedirectsBackend,
-  MonadAsyncError,
-  SttpBackend,
-  SttpBackendOptions,
-  Utf8,
-  concatByteBuffers
-}
+import com.softwaremill.sttp.{FollowRedirectsBackend, MonadAsyncError, SttpBackend, SttpBackendOptions, Utf8, concatByteBuffers}
 import com.softwaremill.sttp.asynchttpclient.AsyncHttpClientBackend
 import monix.eval.Task
 import monix.execution.{Cancelable, Scheduler}
 import monix.reactive.Observable
-import org.asynchttpclient.{
-  AsyncHttpClient,
-  AsyncHttpClientConfig,
-  DefaultAsyncHttpClient
-}
+import org.asynchttpclient.{AsyncHttpClient, AsyncHttpClientConfig, DefaultAsyncHttpClient}
 import org.reactivestreams.Publisher
 
+import scala.concurrent.Promise
 import scala.util.{Failure, Success}
+import rx.lang.scala
 
 class AsyncHttpClientMonixBackend private (
     asyncHttpClient: AsyncHttpClient,
@@ -112,4 +103,8 @@ private[monix] object TaskMonad extends MonadAsyncError[Task] {
   override protected def handleWrappedError[T](rt: Task[T])(
       h: PartialFunction[Throwable, Task[T]]): Task[T] =
     rt.onErrorRecoverWith(h)
+
+  //todo figure out this later
+  override def toObservable[T](fa: Task[T]): scala.Observable[T] = ??? //todo figure out this later
+  override def fromObservable[T](observable: scala.Observable[T]): Task[T] = ??? //todo figure out this later
 }
